@@ -76,14 +76,13 @@ public class User {
 
 	public static User[] loadAll(Connection conn) {
 		List<User> users = new ArrayList<>();
-
 		Statement st;
 		try {
 			st = conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT * FROM users");
 			while (rs.next()) {
 				User tmpUser = new User();
-				tmpUser.setEmail(rs.getString("email")).setUsername(rs.getString("username")).setGroupId(rs.getInt("group_id"));
+				tmpUser.setEmail(rs.getString("email")).setUsername(rs.getString("username")).setGroupId(rs.getInt("person_group_id"));
 				tmpUser.password = rs.getString("password");
 				tmpUser.setId(rs.getInt("id"));
 				users.add(tmpUser);
@@ -105,10 +104,10 @@ public class User {
 		Statement st;
 		try {
 			st = conn.createStatement();
-			ResultSet rs = st.executeQuery("SELECT * FROM users WHERE group_id="+groupId);
+			ResultSet rs = st.executeQuery("SELECT * FROM users WHERE person_group_id="+groupId);
 			while (rs.next()) {
 				User tmpUser = new User();
-				tmpUser.setEmail(rs.getString("email")).setUsername(rs.getString("username")).setGroupId(rs.getInt("group_id"));
+				tmpUser.setEmail(rs.getString("email")).setUsername(rs.getString("username")).setGroupId(rs.getInt("person_group_id"));
 				tmpUser.password = rs.getString("password");
 				tmpUser.setId(rs.getInt("id"));
 				users.add(tmpUser);
@@ -145,7 +144,7 @@ public class User {
 
 		} else {
 			try {
-				PreparedStatement pst = conn.prepareStatement("UPDATE users SET username=?, email=?, password=?, group_id=? WHERE id=?");
+				PreparedStatement pst = conn.prepareStatement("UPDATE users SET username=?, email=?, password=?, person_group_id=? WHERE id=?");
 				pst.setString(1, getUsername());
 				pst.setString(2, getEmail());
 				pst.setString(3, getPassword());
@@ -161,8 +160,8 @@ public class User {
 
 	}
 	
-	public User loadById(Connection conn, int id){
-		String query = "SELECT username, email, password, group_id FROM users WHERE id=?";
+	public static User loadById(Connection conn, int id){
+		String query = "SELECT username, email, password, person_group_id FROM users WHERE id=?";
 		User tmpUser;
 		String username ="";
 		String password="";
@@ -177,7 +176,7 @@ public class User {
 				username=rs.getString("username");
 				password = rs.getString("password");
 				email=rs.getString("email");
-				gruopId = rs.getInt("group_id");
+				gruopId = rs.getInt("person_group_id");
 			}
 			
 			
@@ -209,7 +208,7 @@ public class User {
 
 	@Override
 	public String toString() {
-		return "User [id=" + id + ", username=" + username + ", email=" + email + ", password=" + password + "]";
+		return "User o id=" + id + ", username: " + username + ", email: " + email + ", grupa: " + groupId;
 	}
 
 }
