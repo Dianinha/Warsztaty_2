@@ -84,7 +84,7 @@ public class Excercise {
 			try {
 				PreparedStatement pst = conn.prepareStatement(query, generatedColumns);
 				pst.setString(1, getTitle());
-				pst.setString(1, getDescription());
+				pst.setString(2, getDescription());
 				pst.executeUpdate();
 				ResultSet rs = pst.getGeneratedKeys();
 				if (rs.next()) {
@@ -110,7 +110,7 @@ public class Excercise {
 
 	}
 	
-	public Excercise loadById(Connection conn, int id){
+	public static Excercise loadById(Connection conn, int id){
 		String query= "SELECT title, description FROM excercise WHERE id=?";
 		Excercise tmpEx;
 		String title ="";

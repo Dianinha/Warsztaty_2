@@ -97,7 +97,7 @@ public class Group {
 
 	}
 	
-	public Group loadById(Connection conn, int id){
+	public static Group loadById(Connection conn, int id){
 		String query= "SELECT name FROM user_group WHERE id=?";
 		Group tmpGroup;
 		String name ="";

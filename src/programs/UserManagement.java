@@ -110,7 +110,7 @@ public class UserManagement {
 				result = Integer.parseInt(stringToParse);
 				isParseOk = false;
 			} catch (Exception e) {
-				System.out.println("Nieudało się rozpoznać id. Podaj jeszcze raz.");
+				System.out.println("Nieudało się rozpoznać liczby. Podaj jeszcze raz.");
 			}
 		}
 		return result;
