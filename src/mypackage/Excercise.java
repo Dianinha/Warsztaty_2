@@ -137,6 +137,32 @@ public class Excercise {
 		
 	}
 	
+	public static Solution[] loadAllByUserId(Connection conn, int userId) {
+		List<Solution> usersSolutions = new ArrayList<>();
+		Statement st;
+		try {
+			st = conn.createStatement();
+			ResultSet rs = st.executeQuery("SELECT s.* FROM excercise e JOIN solution s ON e.id=s.excercise_id JOIN users u ON s.users_id = u.id WHERE u.id=" + userId);
+			while (rs.next()) {
+				Solution tmpSolution = new Solution();
+				tmpSolution.setCreated(rs.getTimestamp("created"));
+				tmpSolution.setUpdated(rs.getTimestamp("updated"));
+				tmpSolution.setDescription(rs.getString("description"));
+				tmpSolution.setId(rs.getInt("id"));
+				tmpSolution.setExcercise_id(rs.getInt("excercise_id"));
+				tmpSolution.setUsers_id(rs.getInt("users_id"));
+				usersSolutions.add(tmpSolution);
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		Solution[] solutionsArr = new Solution[usersSolutions.size()];
+		usersSolutions.toArray(solutionsArr);
+
+		return solutionsArr;
+	}
+	
 	public void delete(Connection conn){
 		String query = "DELETE FROM excercise WHERE id=?";
 		PreparedStatement ps;

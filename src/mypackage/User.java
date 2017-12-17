@@ -21,10 +21,21 @@ public class User {
 		super();
 	}
 
-	public User(String username, String email, String password) {
+	public User(String username, String email, String password, int groupId) {
 		super();
-		this.setUsername(username).setEmail(email).setPassword(password);
+		this.setUsername(username).setEmail(email).setPassword(password).setGroupId(groupId);
 
+	}
+	
+	
+
+	public int getGroupId() {
+		return groupId;
+	}
+
+	public User setGroupId(int groupId) {
+		this.groupId = groupId;
+		return this;
 	}
 
 	public int getId() {
@@ -72,7 +83,32 @@ public class User {
 			ResultSet rs = st.executeQuery("SELECT * FROM users");
 			while (rs.next()) {
 				User tmpUser = new User();
-				tmpUser.setEmail(rs.getString("email")).setUsername(rs.getString("username"));
+				tmpUser.setEmail(rs.getString("email")).setUsername(rs.getString("username")).setGroupId(rs.getInt("group_id"));
+				tmpUser.password = rs.getString("password");
+				tmpUser.setId(rs.getInt("id"));
+				users.add(tmpUser);
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		User[] usersArr = new User[users.size()];
+		users.toArray(usersArr);
+
+		return usersArr;
+	}
+	
+	
+	public static User[] loadAllByGrupId(Connection conn, int groupId) {
+		List<User> users = new ArrayList<>();
+
+		Statement st;
+		try {
+			st = conn.createStatement();
+			ResultSet rs = st.executeQuery("SELECT * FROM users WHERE group_id="+groupId);
+			while (rs.next()) {
+				User tmpUser = new User();
+				tmpUser.setEmail(rs.getString("email")).setUsername(rs.getString("username")).setGroupId(rs.getInt("group_id"));
 				tmpUser.password = rs.getString("password");
 				tmpUser.setId(rs.getInt("id"));
 				users.add(tmpUser);
@@ -89,13 +125,14 @@ public class User {
 
 	public User saveToDB(Connection conn) {
 		if (this.getId() == 0) {
-			String query = "INSERT INTO users VALUES (null, ?, ?, ?)";
+			String query = "INSERT INTO users VALUES (null, ?, ?, ?, ?)";
 			String[] generatedColumns = { "id" };
 			try {
 				PreparedStatement pst = conn.prepareStatement(query, generatedColumns);
 				pst.setString(1, getUsername());
 				pst.setString(2, getEmail());
 				pst.setString(3, getPassword());
+				pst.setInt(4, getGroupId());
 
 				pst.executeUpdate();
 				ResultSet rs = pst.getGeneratedKeys();
@@ -108,11 +145,12 @@ public class User {
 
 		} else {
 			try {
-				PreparedStatement pst = conn.prepareStatement("UPDATE users SET username=?, email=?, password=? WHERE id=?");
+				PreparedStatement pst = conn.prepareStatement("UPDATE users SET username=?, email=?, password=?, group_id=? WHERE id=?");
 				pst.setString(1, getUsername());
 				pst.setString(2, getEmail());
 				pst.setString(3, getPassword());
-				pst.setInt(4, this.getId());
+				pst.setInt(4, this.getGroupId());
+				pst.setInt(5, this.getId());
 
 				pst.executeUpdate();
 			} catch (SQLException e) {
@@ -124,11 +162,12 @@ public class User {
 	}
 	
 	public User loadById(Connection conn, int id){
-		String query = "SELECT username, email, password FROM users WHERE id=?";
+		String query = "SELECT username, email, password, group_id FROM users WHERE id=?";
 		User tmpUser;
 		String username ="";
 		String password="";
 		String email="";
+		int gruopId=0;
 		
 		try {
 			PreparedStatement ps = conn.prepareStatement(query);
@@ -138,6 +177,7 @@ public class User {
 				username=rs.getString("username");
 				password = rs.getString("password");
 				email=rs.getString("email");
+				gruopId = rs.getInt("group_id");
 			}
 			
 			
@@ -145,7 +185,7 @@ public class User {
 			e.printStackTrace();
 		}
 		
-		tmpUser = new User(username, email, password);
+		tmpUser = new User(username, email, password, gruopId);
 		tmpUser.setId(id);
 		
 		return tmpUser;

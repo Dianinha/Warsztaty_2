@@ -1,6 +1,13 @@
 package mypackage;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Solution {
 	private int id;
@@ -28,7 +35,7 @@ public class Solution {
 		return id;
 	}
 
-	private void setId(int id) {
+	void setId(int id) {
 		this.id = id;
 	}
 
@@ -82,103 +89,147 @@ public class Solution {
 		return "Solution [id=" + id + ", created=" + created + ", updated=" + updated + ", description=" + description
 				+ ", excercise_id=" + excercise_id + ", users_id=" + users_id + "]";
 	}
+
+	public static Solution[] loadAll(Connection conn) {
+		List<Solution> solutions = new ArrayList<>();
+		Statement st;
+		try {
+			st = conn.createStatement();
+			ResultSet rs = st.executeQuery("SELECT * FROM solution");
+			while (rs.next()) {
+				Solution tmpSolution = new Solution();
+				tmpSolution.setCreated(rs.getTimestamp("created"));
+				tmpSolution.setUpdated(rs.getTimestamp("updated"));
+				tmpSolution.setDescription(rs.getString("description"));
+				tmpSolution.setId(rs.getInt("id"));
+				tmpSolution.setExcercise_id(rs.getInt("excercise_id"));
+				tmpSolution.setUsers_id(rs.getInt("users_id"));
+				solutions.add(tmpSolution);
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		Solution[] solutionsArr = new Solution[solutions.size()];
+		solutions.toArray(solutionsArr);
+
+		return solutionsArr;
+	}
 	
-//	public static Excercise[] loadAll(Connection conn) {
-//		List<Excercise> excercises = new ArrayList<>();
-//		Statement st;
-//		try {
-//			st = conn.createStatement();
-//			ResultSet rs = st.executeQuery("SELECT * FROM excercise");
-//			while (rs.next()) {
-//				Excercise tmpExcercise = new Excercise();
-//				tmpExcercise.setTitle(rs.getString("title"));
-//				tmpExcercise.setDescription(rs.getString("description"));
-//				tmpExcercise.setId(rs.getInt("id"));
-//				excercises.add(tmpExcercise);
-//			}
-//
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		Excercise[] excercisesArr = new Excercise[excercises.size()];
-//		excercises.toArray(excercisesArr);
-//
-//		return excercisesArr;
-//	}
-//
-//	public Excercise saveToDB(Connection conn) {
-//		if (this.getId() == 0) {
-//			String query = "INSERT INTO excercise VALUES (null, ?, ?)";
-//			String[] generatedColumns = { "id" };
-//			try {
-//				PreparedStatement pst = conn.prepareStatement(query, generatedColumns);
-//				pst.setString(1, getTitle());
-//				pst.setString(1, getDescription());
-//				pst.executeUpdate();
-//				ResultSet rs = pst.getGeneratedKeys();
-//				if (rs.next()) {
-//					this.setId(rs.getInt(1));
-//				}
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//			}
-//
-//		} else {
-//			try {
-//				PreparedStatement pst = conn.prepareStatement("UPDATE excercise SET title=?, description=? WHERE id=?");
-//				pst.setString(1, getTitle());
-//				pst.setString(2, getDescription());
-//				pst.setInt(3, this.getId());
-//
-//				pst.executeUpdate();
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		return this;
-//
-//	}
-//	
-//	public Excercise loadById(Connection conn, int id){
-//		String query= "SELECT title, description FROM excercise WHERE id=?";
-//		Excercise tmpEx;
-//		String title ="";
-//		String desc ="";
-//		
-//		try {
-//			PreparedStatement ps = conn.prepareStatement(query);
-//			ps.setInt(1, id);
-//			ResultSet rs = ps.executeQuery();
-//			while (rs.next()) {
-//				title=rs.getString("title");
-//				desc=rs.getString("description");
-//			}
-//			
-//			
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		
-//		tmpEx = new Excercise(title, desc);
-//		tmpEx.setId(id);
-//		
-//		return tmpEx;
-//		
-//	}
-//	
-//	public void delete(Connection conn){
-//		String query = "DELETE FROM excercise WHERE id=?";
-//		PreparedStatement ps;
-//		try {
-//			ps = conn.prepareStatement(query);
-//			ps.setInt(1, this.getId());
-//			ps.executeUpdate();
-//			System.out.println("Usunięto");
-//			
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		
-//	}
+	public static Solution[] loadAllByExerciseId(Connection conn, int exId) {
+		List<Solution> solutions = new ArrayList<>();
+		Statement st;
+		try {
+			st = conn.createStatement();
+			ResultSet rs = st.executeQuery("SELECT * FROM solution WHERE excercise_id=" + exId + " ORDER BY created DESC" );
+			while (rs.next()) {
+				Solution tmpSolution = new Solution();
+				tmpSolution.setCreated(rs.getTimestamp("created"));
+				tmpSolution.setUpdated(rs.getTimestamp("updated"));
+				tmpSolution.setDescription(rs.getString("description"));
+				tmpSolution.setId(rs.getInt("id"));
+				tmpSolution.setExcercise_id(rs.getInt("excercise_id"));
+				tmpSolution.setUsers_id(rs.getInt("users_id"));
+				solutions.add(tmpSolution);
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		Solution[] solutionsArr = new Solution[solutions.size()];
+		solutions.toArray(solutionsArr);
+
+		return solutionsArr;
+	}
+	
+	
+
+	public Solution saveToDB(Connection conn) {
+		if (this.getId() == 0) {
+			String query = "INSERT INTO solution VALUES (null, ?, ?, ?, ?, ?)";
+			String[] generatedColumns = { "id" };
+			try {
+				PreparedStatement pst = conn.prepareStatement(query, generatedColumns);
+				pst.setTimestamp(1, getCreated());
+				pst.setTimestamp(2, getUpdated());
+				pst.setString(3, getDescription());
+				pst.setInt(4, getExcercise_id());
+				pst.setInt(5, getUsers_id());
+				pst.executeUpdate();
+				ResultSet rs = pst.getGeneratedKeys();
+				if (rs.next()) {
+					this.setId(rs.getInt(1));
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+		} else {
+			try {
+				PreparedStatement pst = conn.prepareStatement(
+						"UPDATE solution SET created=?, updated=?, description=?, excercise_id=?, users_id=? WHERE id=?");
+				pst.setTimestamp(1, getCreated());
+				pst.setTimestamp(2, getUpdated());
+				pst.setString(3, getDescription());
+				pst.setInt(4, getExcercise_id());
+				pst.setInt(5, getUsers_id());
+				pst.setInt(6, this.getId());
+
+				pst.executeUpdate();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return this;
+
+	}
+
+	public Solution loadById(Connection conn, int id) {
+		String query = "SELECT created, updated, description, excercise_id, users_id FROM solution WHERE id=?";
+		Solution tmpSolution;
+		Timestamp created = null;
+		Timestamp updated = null;
+		int excerciseId = 0;
+		int usersId = 0;
+		String desc = "";
+
+		try {
+			PreparedStatement ps = conn.prepareStatement(query);
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				created = rs.getTimestamp("created");
+				updated = rs.getTimestamp("updated");
+				excerciseId= rs.getInt("excercise_id");
+				usersId = rs.getInt("users_id");
+				
+				desc = rs.getString("description");
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		tmpSolution = new Solution(created, updated, desc, excerciseId, usersId);
+		tmpSolution.setId(id);
+
+		return tmpSolution;
+
+	}
+	
+	 public void delete(Connection conn){
+	 String query = "DELETE FROM solution WHERE id=?";
+	 PreparedStatement ps;
+	 try {
+	 ps = conn.prepareStatement(query);
+	 ps.setInt(1, this.getId());
+	 ps.executeUpdate();
+	 System.out.println("Usunięto");
+	
+	 } catch (SQLException e) {
+	 e.printStackTrace();
+	 }
+	
+	 }
 
 }
